@@ -1,10 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isDark, setIsDark] = useState(true);
   const [activeTab, setActiveTab] = useState('home');
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const menuRef = useRef(null);
 
-  React.useEffect(() => {
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
     if (!isDark) {
       document.documentElement.classList.add('light');
     } else {
@@ -21,7 +35,12 @@ const Navbar = () => {
       onClick: () => setIsDark(!isDark)
     },
     { id: 'library', icon: <LibraryIcon />, label: 'Library' },
-    { id: 'profile', icon: <ProfileIcon />, label: 'Profile' }
+    { 
+      id: 'profile', 
+      icon: <ProfileIcon />, 
+      label: 'Profile',
+      onClick: () => setShowProfileMenu(!showProfileMenu)
+    }
   ];
 
   return (
@@ -35,14 +54,35 @@ const Navbar = () => {
                 item.onClick();
               } else {
                 setActiveTab(item.id);
+                setShowProfileMenu(false);
               }
             }}
-            className={`nav-item flex items-center justify-center ${
-              activeTab === item.id ? 'nav-item-active' : ''
+            className={`nav-item flex items-center justify-center relative ${
+              activeTab === item.id || (item.id === 'profile' && showProfileMenu) ? 'nav-item-active' : ''
             }`}
             aria-label={item.label}
           >
             {item.icon}
+            
+            {item.id === 'profile' && showProfileMenu && (
+              <div 
+                ref={menuRef}
+                className="absolute bottom-full mb-4 right-0 w-40 glass-nav rounded-2xl p-2 flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-300 shadow-2xl"
+              >
+                <Link 
+                  to="/auth/login" 
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all nav-item hover:text-[var(--accent)]"
+                >
+                  <LoginIcon /> Login
+                </Link>
+                <Link 
+                  to="/auth/signup" 
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all nav-item hover:text-[var(--accent)]"
+                >
+                  <SignupIcon /> Signup
+                </Link>
+              </div>
+            )}
           </button>
         ))}
         
@@ -101,6 +141,23 @@ const ProfileIcon = () => (
     <circle cx="12" cy="12" r="10" />
     <circle cx="12" cy="10" r="3" />
     <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+  </svg>
+);
+
+const SignupIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <line x1="19" y1="8" x2="19" y2="14" />
+    <line x1="22" y1="11" x2="16" y2="11" />
+  </svg>
+);
+
+const LoginIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+    <polyline points="10 17 15 12 10 7" />
+    <line x1="15" y1="12" x2="3" y2="12" />
   </svg>
 );
 
