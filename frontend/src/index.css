@@ -1,43 +1,49 @@
 @import "tailwindcss";
 
+:root {
+  --bg-primary: #0f0f0f;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.5);
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --nav-hover: rgba(255, 255, 255, 0.1);
+  --accent: #ffffff;
+}
+
+.light {
+  --bg-primary: #fafafa;
+  --text-primary: #18181b;
+  --text-secondary: #71717a;
+  --glass-bg: rgba(0, 0, 0, 0.05);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --nav-hover: rgba(0, 0, 0, 0.05);
+  --accent: #18181b;
+}
+
 @layer base {
   body {
-    @apply transition-colors duration-500 bg-[#0f0f0f] text-white antialiased;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    @apply transition-colors duration-500 antialiased;
     font-family: 'Inter', sans-serif;
-  }
-  
-  .light {
-    background-color: #fafafa;
-  }
-  
-  .light body {
-    @apply bg-zinc-50 text-zinc-900;
   }
 }
 
 @layer components {
   .glass-nav {
-    @apply transition-all duration-500 bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)];
-  }
-  
-  .light .glass-nav {
-    @apply bg-black/5 border-black/20 shadow-[0_8px_32px_rgba(0,0,0,0.05)];
+    background-color: var(--glass-bg);
+    border-color: var(--glass-border);
+    @apply backdrop-blur-xl border shadow-[0_8px_32px_rgba(0,0,0,0.15)] transition-all duration-500;
   }
   
   .nav-item {
-    @apply p-2 rounded-xl transition-all duration-300 hover:bg-white/10 active:scale-90 text-white/50 hover:text-white;
-  }
-  
-  .light .nav-item {
-    @apply text-zinc-400 hover:text-zinc-600 hover:bg-black/5;
+    color: var(--text-secondary);
+    @apply p-2 rounded-xl transition-all duration-300 hover:bg-[var(--nav-hover)] active:scale-90 hover:text-[var(--accent)];
   }
   
   .nav-item-active {
-    @apply text-white bg-white/10;
-  }
-  
-  .light .nav-item-active {
-    @apply text-zinc-900 bg-black/10;
+    color: var(--accent);
+    background-color: var(--nav-hover);
   }
 }
 
