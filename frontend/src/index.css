@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply transition-colors duration-500 bg-[#0f0f0f] text-white antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .light {
+    background-color: #fafafa;
+  }
+  
+  .light body {
+    @apply bg-zinc-50 text-zinc-900;
+  }
+}
+
+@layer components {
+  .glass-nav {
+    @apply transition-all duration-500 bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)];
+  }
+  
+  .light .glass-nav {
+    @apply bg-black/5 border-black/20 shadow-[0_8px_32px_rgba(0,0,0,0.05)];
+  }
+  
+  .nav-item {
+    @apply p-2 rounded-xl transition-all duration-300 hover:bg-white/10 active:scale-90 text-white/50 hover:text-white;
+  }
+  
+  .light .nav-item {
+    @apply text-zinc-400 hover:text-zinc-600 hover:bg-black/5;
+  }
+  
+  .nav-item-active {
+    @apply text-white bg-white/10;
+  }
+  
+  .light .nav-item-active {
+    @apply text-zinc-900 bg-black/10;
+  }
+}
+
+/* Landing Page Elements */
+h1 {
+  @apply transition-all duration-500;
+}
+
+.light h1 {
+  @apply text-zinc-900 opacity-100;
+}
+
+.light p {
+  @apply text-zinc-500;
+}
+
+.glow-overlay {
+  @apply transition-all duration-1000;
+}
+
+.light .glow-overlay {
+  @apply opacity-0 pointer-events-none;
+}
