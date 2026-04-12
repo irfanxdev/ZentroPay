@@ -45,6 +45,34 @@
     color: var(--accent);
     background-color: var(--nav-hover);
   }
+
+  .glass-card {
+    background-color: var(--glass-bg);
+    border-color: var(--glass-border);
+    @apply backdrop-blur-2xl border border-white/10 shadow-[0_24px_48px_rgba(0,0,0,0.3)] rounded-3xl transition-all duration-500;
+  }
+
+  .input-field {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    @apply w-full px-5 py-3.5 rounded-2xl border outline-none transition-all duration-300 focus:border-white/30 focus:bg-white/5;
+  }
+
+  .light .input-field {
+    background-color: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.05);
+    @apply focus:border-black/20 focus:bg-black/5;
+  }
+
+  .btn-primary {
+    @apply w-full py-4 px-6 rounded-2xl font-bold tracking-tight transition-all duration-300 bg-[var(--accent)] text-[var(--bg-primary)] hover:opacity-90 active:scale-[0.98] shadow-[0_20px_40px_rgba(0,0,0,0.1)];
+  }
+
+  .link-secondary {
+    color: var(--text-secondary);
+    @apply text-sm transition-all duration-300 hover:text-[var(--text-primary)];
+  }
 }
 
 /* Landing Page Elements */
