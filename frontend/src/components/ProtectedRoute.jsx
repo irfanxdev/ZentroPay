@@ -1,21 +1,19 @@
-    import { useEffect } from "react";
-    import {Navigate} from "react-router-dom";
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-    function ProtectedRoute({children}){
-        const [isAuth,setIsAuth]=useState(null);
-        useEffect(()=>{
-            const checkAuth=async () =>{
-                try{
-                    await API.get("auth/dashboard");
-                    setIsAuth(true);
-                }catch{
-                    setIsAuth(false);
-                }
-            }
-            checkAuth()
-        },[])
-        if(isAuth===null) return <p>Loading...</p>;
-        return isAuth ? children :<Navigate to="/login"/>
-    }
+function ProtectedRoute({ children }) {
+  const { isAuth, loading } = useAuth();
 
-    export default ProtectedRoute;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]">
+        <div className="w-8 h-8 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return isAuth ? children : <Navigate to="/auth/login" />;
+}
+
+export default ProtectedRoute;

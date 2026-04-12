@@ -66,3 +66,8 @@ export async function userLogIn(req, res) {
 export function checkHealth(req, res) {
   return res.status(200).json({ msg: "its health is good" });
 }
+
+export function userLogout(req, res) {
+  res.clearCookie("token");
+  return res.status(200).json({ msg: "Logged out successfully" });
+}

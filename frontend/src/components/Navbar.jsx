@@ -1,11 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuth, logout } = useAuth();
   const [isDark, setIsDark] = useState(true);
   const [activeTab, setActiveTab] = useState('home');
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const menuRef = useRef(null);
+
+  // Sync active tab with location
+  useEffect(() => {
+    if (location.pathname === '/' || location.pathname.startsWith('/dashboard')) setActiveTab('home');
+    else if (location.pathname.startsWith('/library')) setActiveTab('library');
+    else if (location.pathname.startsWith('/auth')) setActiveTab('profile');
+  }, [location]);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -27,14 +38,19 @@ const Navbar = () => {
   }, [isDark]);
 
   const navItems = [
-    { id: 'home', icon: <HomeIcon />, label: 'Home' },
+    { 
+      id: 'home', 
+      icon: isAuth ? <LayoutIcon /> : <HomeIcon />, 
+      label: isAuth ? 'Dashboard' : 'Home', 
+      path: isAuth ? '/dashboard' : '/' 
+    },
     { 
       id: 'theme', 
       icon: isDark ? <SunIcon /> : <MoonIcon />, 
       label: 'Toggle Theme',
       onClick: () => setIsDark(!isDark)
     },
-    { id: 'library', icon: <LibraryIcon />, label: 'Library' },
+    { id: 'library', icon: <LibraryIcon />, label: 'Library', path: '/library' },
     { 
       id: 'profile', 
       icon: <ProfileIcon />, 
@@ -42,6 +58,12 @@ const Navbar = () => {
       onClick: () => setShowProfileMenu(!showProfileMenu)
     }
   ];
+
+  const handleLogout = async () => {
+    await logout();
+    setShowProfileMenu(false);
+    navigate('/');
+  };
 
   return (
     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
@@ -52,6 +74,9 @@ const Navbar = () => {
             onClick={() => {
               if (item.onClick) {
                 item.onClick();
+              } else if (item.path) {
+                navigate(item.path);
+                setShowProfileMenu(false);
               } else {
                 setActiveTab(item.id);
                 setShowProfileMenu(false);
@@ -67,20 +92,39 @@ const Navbar = () => {
             {item.id === 'profile' && showProfileMenu && (
               <div 
                 ref={menuRef}
-                className="absolute bottom-full mb-4 right-0 w-40 glass-nav rounded-2xl p-2 flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-300 shadow-2xl"
+                className="absolute bottom-full mb-4 right-0 w-48 glass-nav rounded-2xl p-2 flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-300 shadow-2xl"
               >
-                <Link 
-                  to="/auth/login" 
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all nav-item hover:text-[var(--accent)]"
-                >
-                  <LoginIcon /> Login
-                </Link>
-                <Link 
-                  to="/auth/signup" 
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all nav-item hover:text-[var(--accent)]"
-                >
-                  <SignupIcon /> Signup
-                </Link>
+                {!isAuth ? (
+                  <>
+                    <Link 
+                      to="/auth/login" 
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all nav-item hover:text-[var(--accent)]"
+                    >
+                      <LoginIcon /> Login
+                    </Link>
+                    <Link 
+                      to="/auth/signup" 
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all nav-item hover:text-[var(--accent)]"
+                    >
+                      <SignupIcon /> Signup
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link 
+                      to="/dashboard" 
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all nav-item hover:text-[var(--accent)]"
+                    >
+                      <LayoutIcon /> Dashboard
+                    </Link>
+                    <button 
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all nav-item hover:text-red-500 w-full text-left"
+                    >
+                      <LogoutIcon /> Logout
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </button>
@@ -158,6 +202,22 @@ const LoginIcon = () => (
     <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
     <polyline points="10 17 15 12 10 7" />
     <line x1="15" y1="12" x2="3" y2="12" />
+  </svg>
+);
+
+const LogoutIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </svg>
+);
+
+const LayoutIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+    <line x1="3" y1="9" x2="21" y2="9" />
+    <line x1="9" y1="21" x2="9" y2="9" />
   </svg>
 );
 
