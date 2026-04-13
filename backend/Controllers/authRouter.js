@@ -22,7 +22,7 @@ export async function userSignUp(req, res) {
     };
 
     const user=await User.create(newUser);
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id, name: user.name }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
     res.cookie("token", token, {
@@ -50,7 +50,7 @@ export async function userLogIn(req, res) {
         .json({ error: "Email is not exist please login " });
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ msg: "password is incorrect" });
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id, name: user.name }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
     res.cookie("token", token, {
