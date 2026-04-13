@@ -5,6 +5,7 @@ import dotenv from "dotenv"
 dotenv.config();
 import router from "./Routes/routes.js";
 import cookieParser from "cookie-parser";
+import roomRoute from "./Routes/roomRouter.js";
 
 
 const app=express();
@@ -20,6 +21,7 @@ app.use(cookieParser());
 
 // endpoint
 app.use("/api/auth",router);
+app.use("/api/room",roomRoute);
 app.get("/",(req,res)=>{
      return res.status(200).json({msg:"This is Home Route"})
 })
