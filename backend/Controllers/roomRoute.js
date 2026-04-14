@@ -50,3 +50,15 @@ export const roomCreated = async (req, res) => {
 export const roomJoined = (req, res) => {
     return res.status(200).json({ msg: "Room joined Successfully" });
 }
+
+export const getAllRoom= async (req,res)=>{
+    try{
+        const rooms=await Room.find({user:req.user.id});
+        return res.status(200).json({
+            msg:"Rooms data fetched successfully",
+            rooms
+        })
+    }catch(error){
+        return res.status(500).json({msg:"server error while geting the rooms data"})
+    }
+}
