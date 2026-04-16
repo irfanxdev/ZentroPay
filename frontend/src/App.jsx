@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
+import RoomDetail from './pages/RoomDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Mock components for routes
@@ -38,6 +39,14 @@ function App() {
               <Dashboard />
             </ProtectedRoute>
           } 
+        />
+        <Route
+          path="/room/:id"
+          element={
+            <ProtectedRoute>
+              <RoomDetail />
+            </ProtectedRoute>
+          }
         />
       </Routes>
     </Router>
