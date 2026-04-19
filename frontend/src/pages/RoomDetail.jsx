@@ -93,9 +93,6 @@ const RoomDetail = () => {
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <p className="text-[10px] font-bold uppercase tracking-[0.25em] opacity-40">
-                Room Purpose
-              </p>
               <h1 className="text-2xl md:text-3xl font-black tracking-tight">
                 {room?.purpose}
               </h1>
@@ -103,6 +100,7 @@ const RoomDetail = () => {
                 {room?.member} member{room?.member !== 1 ? 's' : ''} &nbsp;·&nbsp;{' '}
                 {room?.memberNames?.join(', ')}
               </p>
+              <p>Room code : {room?.code}</p>
             </div>
 
             {/* Total */}
