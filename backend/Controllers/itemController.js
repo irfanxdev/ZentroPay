@@ -22,7 +22,7 @@ export const getRoomItems = async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(500).json({ msg: "Server error while fetching items" });
-    }
+    }      
 };
 
 // POST add a new item to a room

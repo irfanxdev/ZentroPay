@@ -1,5 +1,13 @@
 import Room from "../Models/Room.js";
 
+async function genrateUniqueCode(){
+    const code=Math.floor(1000+Math.random()*9000);
+   const exist=await Room.findOne({code});
+   if(exist){
+    return genrateUniqueCode();
+   }
+   return code;
+}
 export const roomCreated = async (req, res) => {
     try {
         const { purpose, numMembers, memberNames } = req.body;
@@ -26,11 +34,12 @@ export const roomCreated = async (req, res) => {
                 msg: "Number of members must match the number of names"
             });
         }
-
+        const uniqueCode=await genrateUniqueCode();
         const newRoom = await Room.create({
             purpose,
             member: count,
             memberNames: memberNameArray,
+            code:uniqueCode,
             user: req.user.id
         });
 

@@ -16,6 +16,11 @@ const roomSchema = new mongoose.Schema({
             type: String,
         }
     ],
+    code:{
+        type:Number,
+        required:true,
+        unique:true,
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
