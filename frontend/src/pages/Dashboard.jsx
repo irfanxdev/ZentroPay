@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import API from '../api/api.js';
 import CreateRoomModal from '../components/CreateRoomModal';
+import JoinRoomModal from '../components/JoinRoomModal';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const Dashboard = () => {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,6 +51,13 @@ const Dashboard = () => {
     } catch (error) {
       console.log("Failed to send the Room create data", error);
     }
+  };
+
+  const handleJoinRoom = async (roomCode) => {
+    // Throws on error so JoinRoomModal can display the message
+    const res = await API.post("/room/join", { code: roomCode });
+    setIsJoinModalOpen(false);
+    navigate(`/room/${res.data.room._id}`);
   };
 
   if (loading) {
@@ -86,7 +95,10 @@ const Dashboard = () => {
               <Plus className="w-4 h-4" />
               Create New
             </button>
-            <button className="flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] hover:bg-white/10 dark:hover:bg-white/10 hover:bg-black/5 transition-all text-xs md:text-sm font-bold flex items-center justify-center gap-2">
+            <button
+              onClick={() => setIsJoinModalOpen(true)}
+              className="flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] hover:bg-white/10 dark:hover:bg-white/10 hover:bg-black/5 transition-all text-xs md:text-sm font-bold flex items-center justify-center gap-2"
+            >
               <UserPlus className="w-4 h-4" />
               Add existing
             </button>
@@ -97,6 +109,12 @@ const Dashboard = () => {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onCreate={handleCreateRoom}
+        />
+
+        <JoinRoomModal
+          isOpen={isJoinModalOpen}
+          onClose={() => setIsJoinModalOpen(false)}
+          onJoin={handleJoinRoom}
         />
 
         {/* Stats Grid */}
