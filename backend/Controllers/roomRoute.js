@@ -40,7 +40,8 @@ export const roomCreated = async (req, res) => {
             member: count,
             memberNames: memberNameArray,
             code:uniqueCode,
-            user: req.user.id
+            user: req.user.id,
+            members: [req.user.id]
         });
 
         console.log(newRoom);
@@ -62,8 +63,18 @@ export const roomJoined = async (req, res) => {
         if(!code) return res.status(400).json({msg:"please enter a code"});
         const room=await Room.findOne({code});
         if(!room) return res.status(404).json({msg:"Room not found"});
+
+        // Prevent duplicate: check if user already joined
+        const alreadyJoined = room.members.some(
+            (memberId) => memberId.toString() === req.user.id.toString()
+        );
+        if(alreadyJoined){
+            return res.status(400).json({message:"You have already joined this room"});
+        }
+
         room.member+=1;
         room.memberNames.push(req.user.name);
+        room.members.push(req.user.id);
         await room.save();
         return res.status(200).json({
             msg:"Room joined successfully",
@@ -78,7 +89,13 @@ export const roomJoined = async (req, res) => {
 
 export const getAllRoom= async (req,res)=>{
     try{
-        const rooms=await Room.find({user:req.user.id});
+        // Return rooms where this user is the creator OR has joined as a member
+        const rooms=await Room.find({
+            $or: [
+                { user: req.user.id },
+                { members: req.user.id }
+            ]
+        });
         return res.status(200).json({
             msg:"Rooms data fetched successfully",
             rooms
