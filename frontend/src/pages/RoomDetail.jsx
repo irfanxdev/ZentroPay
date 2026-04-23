@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -6,11 +6,15 @@ import {
   Plus,
   PackageOpen,
   IndianRupee,
-  Trash2,
   ShoppingBag,
   X,
+  Wifi,
+  WifiOff,
 } from 'lucide-react';
+import { io } from 'socket.io-client';
 import API from '../api/api.js';
+
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000';
 
 const RoomDetail = () => {
   const { id } = useParams();
@@ -19,6 +23,7 @@ const RoomDetail = () => {
   const [room, setRoom] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [connected, setConnected] = useState(false);
 
   // Add item form state
   const [showForm, setShowForm] = useState(false);
@@ -26,7 +31,13 @@ const RoomDetail = () => {
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
 
-  // Fetch room + items
+  // Live activity toast
+  const [liveToast, setLiveToast] = useState(null);
+  const toastTimer = useRef(null);
+
+  const socketRef = useRef(null);
+
+  // ── Fetch room + items ───────────────────────────────────────────────────
   const fetchData = async () => {
     try {
       const res = await API.get(`/room/${id}/items`);
@@ -39,10 +50,42 @@ const RoomDetail = () => {
     }
   };
 
+  // ── Socket.IO setup ──────────────────────────────────────────────────────
   useEffect(() => {
     fetchData();
+
+    const socket = io(SOCKET_URL, { withCredentials: true });
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      setConnected(true);
+      socket.emit('join-room', id);   // subscribe to this room's events
+    });
+
+    socket.on('disconnect', () => setConnected(false));
+
+    // Real-time: new item added by any member
+    socket.on('new-item', (item) => {
+      setItems((prev) => {
+        // guard against duplicates (our own POST response + socket event)
+        if (prev.some((i) => i._id === item._id)) return prev;
+        return [...prev, item];
+      });
+
+      // Show a brief live toast
+      const adder = item.addedBy?.name || 'Someone';
+      setLiveToast(`${adder} added "${item.name}"`);
+      clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => setLiveToast(null), 3000);
+    });
+
+    return () => {
+      socket.disconnect();
+      clearTimeout(toastTimer.current);
+    };
   }, [id]);
 
+  // ── Add Item ─────────────────────────────────────────────────────────────
   const handleAddItem = async (e) => {
     e.preventDefault();
     setError('');
@@ -52,7 +95,13 @@ const RoomDetail = () => {
         name: formData.name.trim(),
         amount: Number(formData.amount),
       });
-      setItems((prev) => [...prev, res.data.item]);
+      // The socket 'new-item' event from the server will update the list for
+      // ALL members (including ourselves via the deduplication guard above).
+      // We also add it immediately here for instant local feedback.
+      setItems((prev) => {
+        if (prev.some((i) => i._id === res.data.item._id)) return prev;
+        return [...prev, res.data.item];
+      });
       setFormData({ name: '', amount: '' });
       setShowForm(false);
     } catch (err) {
@@ -64,6 +113,7 @@ const RoomDetail = () => {
 
   const totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
 
+  // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
@@ -72,6 +122,7 @@ const RoomDetail = () => {
     );
   }
 
+  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] p-4 md:p-8 pt-12 transition-colors duration-500">
       <div className="max-w-3xl mx-auto space-y-8">
@@ -97,26 +148,57 @@ const RoomDetail = () => {
                 {room?.purpose}
               </h1>
               <p className="text-[var(--text-secondary)] text-sm font-medium mt-1">
-                {room?.member} member{room?.member !== 1 ? 's' : ''} &nbsp;·&nbsp;{' '}
+                {room?.member} member{room?.member !== 1 ? 's' : ''}&nbsp;·&nbsp;{' '}
                 {room?.memberNames?.join(', ')}
               </p>
-              <p>Room code : {room?.code}</p>
+              <p className="text-[var(--text-secondary)] text-xs mt-0.5 font-mono">
+                Room code: <span className="font-black text-[var(--text-primary)] tracking-widest">{room?.code}</span>
+              </p>
             </div>
 
-            {/* Total */}
-            <div className="glass-card p-4 md:p-5 text-center min-w-[130px] shrink-0">
-              <p className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">
-                Total
-              </p>
-              <div className="flex items-center justify-center gap-1">
-                <IndianRupee className="w-5 h-5 opacity-70" />
-                <span className="text-2xl font-black">
-                  {totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                </span>
+            <div className="flex flex-col items-end gap-2">
+              {/* Live status indicator */}
+              <div className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border ${
+                connected
+                  ? 'border-green-500/30 bg-green-500/10 text-green-400'
+                  : 'border-red-500/30 bg-red-500/10 text-red-400'
+              }`}>
+                {connected
+                  ? <><Wifi className="w-3 h-3" /> Live</>
+                  : <><WifiOff className="w-3 h-3" /> Offline</>
+                }
+              </div>
+
+              {/* Total */}
+              <div className="glass-card p-4 md:p-5 text-center min-w-[130px] shrink-0">
+                <p className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">
+                  Total
+                </p>
+                <div className="flex items-center justify-center gap-1">
+                  <IndianRupee className="w-5 h-5 opacity-70" />
+                  <span className="text-2xl font-black">
+                    {totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </motion.div>
+
+        {/* Live Toast */}
+        <AnimatePresence>
+          {liveToast && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl glass-card border border-green-500/20 bg-green-500/10 text-green-400 text-sm font-semibold flex items-center gap-2 shadow-xl"
+            >
+              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              {liveToast}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Items Section */}
         <div className="space-y-4">
@@ -247,42 +329,43 @@ const RoomDetail = () => {
               animate={{ opacity: 1 }}
               className="glass-card overflow-hidden"
             >
-              {items.map((item, index) => (
-                <motion.div
-                  key={item._id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`flex items-center justify-between px-6 py-4 ${
-                    index !== items.length - 1
-                      ? 'border-b border-[var(--glass-border)]'
-                      : ''
-                  } hover:bg-white/5 transition-all group`}
-                >
-                  {/* Left – index + name */}
-                  <div className="flex items-center gap-4">
-                    <span className="w-8 h-8 rounded-xl border border-[var(--glass-border)] flex items-center justify-center text-xs font-black opacity-40 shrink-0">
-                      {index + 1}
-                    </span>
-                    <div>
-                      <p className="font-semibold text-sm md:text-base">{item.name}</p>
-                      {item.addedBy?.name && (
-                        <p className="text-[var(--text-secondary)] text-xs mt-0.5">
-                          Added by {item.addedBy.name}
-                        </p>
-                      )}
+              <AnimatePresence initial={false}>
+                {items.map((item, index) => (
+                  <motion.div
+                    key={item._id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 10 }}
+                    transition={{ delay: index < 5 ? index * 0.04 : 0 }}
+                    className={`flex items-center justify-between px-6 py-4 ${
+                      index !== items.length - 1
+                        ? 'border-b border-[var(--glass-border)]'
+                        : ''
+                    } hover:bg-white/5 transition-all`}
+                  >
+                    {/* Left – index + name */}
+                    <div className="flex items-center gap-4">
+                      <span className="w-8 h-8 rounded-xl border border-[var(--glass-border)] flex items-center justify-center text-xs font-black opacity-40 shrink-0">
+                        {index + 1}
+                      </span>
+                      <div>
+                        <p className="font-semibold text-sm md:text-base">{item.name}</p>
+                        {item.addedBy?.name && (
+                          <p className="text-[var(--text-secondary)] text-xs mt-0.5">
+                            Added by {item.addedBy.name}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Right – amount */}
-                  <div className="flex items-center gap-3">
+                    {/* Right – amount */}
                     <span className="font-black text-base md:text-lg flex items-center gap-0.5">
                       <IndianRupee className="w-4 h-4 opacity-60" />
                       {item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </span>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
 
               {/* Total row */}
               <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--glass-border)] bg-white/[0.03]">

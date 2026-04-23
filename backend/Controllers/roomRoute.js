@@ -10,41 +10,21 @@ async function genrateUniqueCode(){
 }
 export const roomCreated = async (req, res) => {
     try {
-        const { purpose, numMembers, memberNames } = req.body;
+        const { purpose } = req.body;
 
-        if (!purpose || !numMembers || !memberNames) {
-            return res.status(400).json({ msg: "All fields are required" });
+        if (!purpose) {
+            return res.status(400).json({ msg: "Purpose is required" });
         }
 
-        const count = Number(numMembers);
-
-        if (isNaN(count)) {
-            return res.status(400).json({ msg: "Members must be a number" });
-        }
-
-        const memberNameArray = Array.isArray(memberNames)
-            ? memberNames
-            : memberNames
-                .split(",")
-                .map(name => name.trim())
-                .filter(name => name !== "");
-
-        if (memberNameArray.length !== count) {
-            return res.status(400).json({
-                msg: "Number of members must match the number of names"
-            });
-        }
-        const uniqueCode=await genrateUniqueCode();
+        const uniqueCode = await genrateUniqueCode();
         const newRoom = await Room.create({
             purpose,
-            member: count,
-            memberNames: memberNameArray,
-            code:uniqueCode,
+            member: 1,                  // creator is the first member
+            memberNames: [req.user.name], // creator's name seeds the list
+            code: uniqueCode,
             user: req.user.id,
-            members: [req.user.id]
+            members: [req.user.id],      // creator's ID in the members array
         });
-
-        console.log(newRoom);
 
         return res.status(200).json({
             msg: "Room created Successfully",
