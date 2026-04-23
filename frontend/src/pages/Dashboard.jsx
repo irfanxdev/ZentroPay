@@ -25,15 +25,17 @@ const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
+  const fetchRooms = async () => {
+    const resRoom = await API.get("/room/all");
+    setRooms(resRoom.data.rooms);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await API.get('/auth/dashboard');
         setUser(res.data.user);
-
-        const resRoom = await API.get("/room/all");
-        setRooms(resRoom.data.rooms); // 🔥 store all rooms
-
+        await fetchRooms();
       } catch (err) {
         console.error("Failed to fetch data", err);
       } finally {
@@ -48,16 +50,17 @@ const Dashboard = () => {
     try {
       await API.post("/room/create", data);
       setIsModalOpen(false);
+      await fetchRooms(); // refresh list so new room appears
     } catch (error) {
       console.log("Failed to send the Room create data", error);
     }
   };
 
   const handleJoinRoom = async (roomCode) => {
-    // Throws on error so JoinRoomModal can display the message
-    const res = await API.post("/room/join", { code: roomCode });
+    // Throws on error so JoinRoomModal displays the error message
+    await API.post("/room/join", { code: roomCode });
+    await fetchRooms(); // refresh list so joined room appears in dashboard
     setIsJoinModalOpen(false);
-    navigate(`/room/${res.data.room._id}`);
   };
 
   if (loading) {

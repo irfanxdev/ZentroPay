@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Users } from 'lucide-react';
+import { X } from 'lucide-react';
 
 const CreateRoomModal = ({ isOpen, onClose, onCreate }) => {
-  const [formData, setFormData] = useState({
-    purpose: '',
-    numMembers: '',
-    memberNames: ''
-  });
+  const [purpose, setPurpose] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onCreate(formData);
-    setFormData({ purpose: '', numMembers: '', memberNames: '' });
+    onCreate({ purpose });
+    setPurpose('');
     onClose();
   };
 
@@ -34,45 +30,22 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }) => {
             </button>
 
             <h2 className="text-2xl font-black mb-1">Create New Room</h2>
-            <p className="text-[var(--text-secondary)] text-sm mb-8">Set up your new expense group</p>
+            <p className="text-[var(--text-secondary)] text-sm mb-8">
+              Set up your new expense group — share the code to invite members.
+            </p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest opacity-40 px-1">Purpose</label>
+                <label className="text-xs font-bold uppercase tracking-widest opacity-40 px-1">
+                  Purpose
+                </label>
                 <input
                   required
                   type="text"
                   placeholder="e.g. Office Lunch, Rent, Trip"
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 focus:border-white/20 outline-none transition-all placeholder:opacity-20 text-[var(--text-primary)]"
-                  value={formData.purpose}
-                  onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest opacity-40 px-1">Number of Members</label>
-                <div className="relative">
-                  <Users className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 opacity-20" />
-                  <input
-                    required
-                    type="number"
-                    placeholder="0"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-5 py-3.5 focus:border-white/20 outline-none transition-all placeholder:opacity-20 text-[var(--text-primary)]"
-                    value={formData.numMembers}
-                    onChange={(e) => setFormData({ ...formData, numMembers: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest opacity-40 px-1">Member Names</label>
-                <textarea
-                  required
-                  rows="3"
-                  placeholder="Enter names separated by commas..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 focus:border-white/20 outline-none transition-all placeholder:opacity-20 resize-none text-[var(--text-primary)]"
-                  value={formData.memberNames}
-                  onChange={(e) => setFormData({ ...formData, memberNames: e.target.value })}
+                  value={purpose}
+                  onChange={(e) => setPurpose(e.target.value)}
                 />
               </div>
 
