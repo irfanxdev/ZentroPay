@@ -11,9 +11,12 @@ import {
   Wifi,
   WifiOff,
   Trash2,
+  Download,
 } from 'lucide-react';
 
 import { io } from 'socket.io-client';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import API from '../api/api.js';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000';
@@ -151,6 +154,112 @@ const RoomDetail = () => {
 
   const totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
 
+  // ── Download PDF Report ────────────────────────────────────────────────
+  const handleDownloadPDF = () => {
+    if (!room) return;
+
+    // 1. Calculate Summary
+    const membersInfo = {};
+    if (room.memberNames && room.memberNames.length > 0) {
+      room.memberNames.forEach((name) => {
+        membersInfo[name] = 0;
+      });
+    }
+
+    items.forEach((item) => {
+      const name = item.addedBy?.name || 'Unknown';
+      if (membersInfo[name] === undefined) {
+        membersInfo[name] = 0;
+      }
+      membersInfo[name] += item.amount;
+    });
+
+    // 2. Calculate Transactions
+    const totalMembers = room.member || Object.keys(membersInfo).length || 1;
+    const perPersonShare = totalAmount / totalMembers;
+
+    const balances = [];
+    for (const [name, paid] of Object.entries(membersInfo)) {
+      balances.push({ name, balance: paid - perPersonShare });
+    }
+
+    // debtors owe money (balance < 0), creditors receive money (balance > 0)
+    const debtors = balances.filter((b) => b.balance < -0.01).sort((a, b) => a.balance - b.balance);
+    const creditors = balances.filter((b) => b.balance > 0.01).sort((a, b) => b.balance - a.balance);
+
+    const transactions = [];
+    let i = 0;
+    let j = 0;
+
+    while (i < debtors.length && j < creditors.length) {
+      const debtor = debtors[i];
+      const creditor = creditors[j];
+
+      const amountToSettle = Math.min(Math.abs(debtor.balance), creditor.balance);
+
+      transactions.push({
+        From: debtor.name,
+        To: creditor.name,
+        Amount: amountToSettle.toFixed(2),
+      });
+
+      debtor.balance += amountToSettle;
+      creditor.balance -= amountToSettle;
+
+      if (Math.abs(debtor.balance) < 0.01) i++;
+      if (creditor.balance < 0.01) j++;
+    }
+
+    // 3. Construct PDF
+    const doc = new jsPDF();
+    let currentY = 14;
+
+    // Title
+    doc.setFontSize(18);
+    doc.text(room.purpose || 'Room Report', 14, currentY);
+    currentY += 10;
+
+    // Summary Table
+    doc.setFontSize(14);
+    doc.text('Summary (Who paid how much)', 14, currentY);
+    currentY += 6;
+
+    const summaryData = Object.entries(membersInfo).map(([name, paid]) => [
+      name,
+      paid.toFixed(2),
+    ]);
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Name', 'Total Paid (Rs)']],
+      body: summaryData,
+      theme: 'grid',
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: { fillColor: [41, 128, 185] },
+    });
+
+    currentY = doc.lastAutoTable.finalY + 14;
+
+    // Transactions Table
+    doc.setFontSize(14);
+    doc.text('Transactions (Who paid to whom)', 14, currentY);
+    currentY += 6;
+
+    const transactionData = transactions.map((t) => [t.From, t.To, t.Amount]);
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [['From', 'To', 'Amount (Rs)']],
+      body: transactionData,
+      theme: 'grid',
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: { fillColor: [39, 174, 96] },
+    });
+
+    // Save
+    doc.save(`${room.purpose || 'room'}_report.pdf`);
+  };
+
 
   // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
@@ -196,19 +305,28 @@ const RoomDetail = () => {
             </div>
 
             <div className="flex flex-col items-end gap-2">
-              {/* Delete button – creator only */}
-              {room?.user?.toString() === currentUser?._id?.toString() && (
+              <div className="flex items-center gap-2">
+                {/* Download Report Button */}
                 <button
-                  id="delete-room-btn"
-                  onClick={handleDeleteRoom}
-                  className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"
+                  onClick={handleDownloadPDF}
+                  className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] hover:bg-[var(--nav-hover)] transition-all text-[var(--text-primary)]"
                 >
-                  <Trash2 className="w-3 h-3" />
-                  Delete Room
+                  <Download className="w-3 h-3" />
+                  Download Report
                 </button>
-              )}
 
-
+                {/* Delete button – creator only */}
+                {room?.user?.toString() === currentUser?._id?.toString() && (
+                  <button
+                    id="delete-room-btn"
+                    onClick={handleDeleteRoom}
+                    className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    Delete Room
+                  </button>
+                )}
+              </div>
 
               {/* Total */}
               <div className="glass-card p-4 md:p-5 text-center min-w-[130px] shrink-0">
