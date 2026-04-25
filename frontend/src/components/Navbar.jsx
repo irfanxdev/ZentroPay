@@ -6,7 +6,13 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuth, logout } = useAuth();
-  const [isDark, setIsDark] = useState(true);
+
+  // Restore theme from localStorage (defaults to dark)
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem('zentropay-theme');
+    return saved ? saved === 'dark' : true;
+  });
+
   const [activeTab, setActiveTab] = useState('home');
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const menuRef = useRef(null);
@@ -29,13 +35,17 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Apply theme class + persist to localStorage
   useEffect(() => {
     if (!isDark) {
       document.documentElement.classList.add('light');
+      localStorage.setItem('zentropay-theme', 'light');
     } else {
       document.documentElement.classList.remove('light');
+      localStorage.setItem('zentropay-theme', 'dark');
     }
   }, [isDark]);
+
 
   const navItems = [
     { 
@@ -132,7 +142,7 @@ const Navbar = () => {
         
         {/* Indicators or subtle glow effects can be added here */}
         <div 
-          className="absolute -bottom-1 h-1 bg-white/20 blur-sm rounded-full transition-all duration-500"
+          className="absolute -bottom-1 h-1 bg-[var(--text-primary)] opacity-20 blur-sm rounded-full transition-all duration-500"
           style={{
             width: '40px',
             left: `${navItems.findIndex(i => i.id === activeTab) * 52 + 16}px`

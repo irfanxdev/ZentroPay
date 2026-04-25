@@ -208,17 +208,7 @@ const RoomDetail = () => {
                 </button>
               )}
 
-              {/* Live status indicator */}
-              <div className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border ${
-                connected
-                  ? 'border-green-500/30 bg-green-500/10 text-green-400'
-                  : 'border-red-500/30 bg-red-500/10 text-red-400'
-              }`}>
-                {connected
-                  ? <><Wifi className="w-3 h-3" /> Live</>
-                  : <><WifiOff className="w-3 h-3" /> Offline</>
-                }
-              </div>
+
 
               {/* Total */}
               <div className="glass-card p-4 md:p-5 text-center min-w-[130px] shrink-0">
@@ -263,7 +253,7 @@ const RoomDetail = () => {
             <button
               id="add-item-btn"
               onClick={() => setShowForm(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] hover:bg-white/10 dark:hover:bg-white/10 hover:bg-black/5 text-xs font-bold transition-all"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] hover:bg-[var(--nav-hover)] text-xs font-bold transition-all"
             >
               <Plus className="w-4 h-4" />
               Add Item
@@ -273,7 +263,7 @@ const RoomDetail = () => {
           {/* Add Item Modal */}
           <AnimatePresence>
             {showForm && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--overlay-bg)] backdrop-blur-sm transition-colors duration-500">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -283,7 +273,7 @@ const RoomDetail = () => {
                   {/* Close */}
                   <button
                     onClick={() => { setShowForm(false); setError(''); }}
-                    className="absolute top-6 right-6 p-2 rounded-lg hover:bg-white/5 transition-all text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                    className="absolute top-6 right-6 p-2 rounded-lg hover:bg-[var(--nav-hover)] transition-all text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -304,7 +294,7 @@ const RoomDetail = () => {
                         type="text"
                         id="item-name"
                         placeholder="e.g. Pizza, Movie Tickets, Hotel"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 focus:border-white/20 outline-none transition-all placeholder:opacity-20 text-[var(--text-primary)]"
+                        className="input-field"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       />
@@ -324,7 +314,7 @@ const RoomDetail = () => {
                           placeholder="0.00"
                           min="0"
                           step="0.01"
-                          className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-5 py-3.5 focus:border-white/20 outline-none transition-all placeholder:opacity-20 text-[var(--text-primary)]"
+                          className="input-field pl-12"
                           value={formData.amount}
                           onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                         />
@@ -341,7 +331,7 @@ const RoomDetail = () => {
                       <button
                         type="button"
                         onClick={() => { setShowForm(false); setError(''); }}
-                        className="flex-1 px-6 py-4 rounded-xl border border-white/5 hover:bg-white/5 font-bold transition-all"
+                        className="flex-1 px-6 py-4 rounded-xl border border-[var(--glass-border)] hover:bg-[var(--glass-bg)] font-bold transition-all text-[var(--text-primary)]"
                       >
                         Cancel
                       </button>
@@ -401,7 +391,7 @@ const RoomDetail = () => {
                         index !== items.length - 1
                           ? 'border-b border-[var(--glass-border)]'
                           : ''
-                      } hover:bg-white/5 transition-all group/row`}
+                      } hover:bg-[var(--glass-bg)] transition-all group/row`}
                     >
                       {/* Left – index + name */}
                       <div className="flex items-center gap-4">
@@ -442,7 +432,7 @@ const RoomDetail = () => {
               </div>
 
               {/* Total row — always visible, never scrolls */}
-              <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--glass-border)] bg-white/[0.03]">
+              <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--glass-border)] bg-[var(--glass-bg)]">
                 <span className="text-xs font-black uppercase tracking-widest opacity-40">
                   Total
                 </span>

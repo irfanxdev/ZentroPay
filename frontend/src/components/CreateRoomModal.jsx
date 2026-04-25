@@ -15,16 +15,16 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--overlay-bg)] backdrop-blur-sm transition-colors duration-500">
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="glass-card w-full max-w-md p-8 relative"
+            className="glass-card w-full max-w-md p-6 sm:p-8 relative"
           >
             <button
               onClick={onClose}
-              className="absolute top-6 right-6 p-2 rounded-lg hover:bg-white/5 transition-all text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              className="absolute top-6 right-6 p-2 rounded-lg hover:bg-[var(--nav-hover)] transition-all text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             >
               <X className="w-5 h-5" />
             </button>
@@ -43,7 +43,7 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }) => {
                   required
                   type="text"
                   placeholder="e.g. Office Lunch, Rent, Trip"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 focus:border-white/20 outline-none transition-all placeholder:opacity-20 text-[var(--text-primary)]"
+                  className="input-field"
                   value={purpose}
                   onChange={(e) => setPurpose(e.target.value)}
                 />
@@ -53,7 +53,7 @@ const CreateRoomModal = ({ isOpen, onClose, onCreate }) => {
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 px-6 py-4 rounded-xl border border-white/5 hover:bg-white/5 font-bold transition-all"
+                  className="flex-1 px-6 py-4 rounded-xl border border-[var(--glass-border)] hover:bg-[var(--glass-bg)] font-bold transition-all text-[var(--text-primary)]"
                 >
                   Cancel
                 </button>

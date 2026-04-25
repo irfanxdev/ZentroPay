@@ -66,18 +66,18 @@ const JoinRoomModal = ({ isOpen, onClose, onJoin }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--overlay-bg)] backdrop-blur-sm transition-colors duration-500">
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="glass-card w-full max-w-sm p-8 relative"
+            className="glass-card w-full max-w-sm p-6 sm:p-8 relative"
           >
             {/* Close Button */}
             <button
               onClick={handleClose}
-              className="absolute top-6 right-6 p-2 rounded-lg hover:bg-white/5 transition-all text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              className="absolute top-6 right-6 p-2 rounded-lg hover:bg-[var(--nav-hover)] transition-all text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             >
               <X className="w-5 h-5" />
             </button>
@@ -110,14 +110,14 @@ const JoinRoomModal = ({ isOpen, onClose, onJoin }) => {
                     onChange={(e) => handleChange(i, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(i, e)}
                     className={`
-                      w-16 h-16 text-center text-2xl font-black rounded-2xl
+                      w-12 h-12 sm:w-16 sm:h-16 text-center text-xl sm:text-2xl font-black rounded-2xl
                       border transition-all outline-none
-                      bg-white/5 text-[var(--text-primary)]
+                      bg-[var(--glass-bg)] text-[var(--text-primary)]
                       ${digit
-                        ? 'border-[var(--text-primary)] shadow-[0_0_0_2px_rgba(255,255,255,0.08)]'
-                        : 'border-white/10'
+                        ? 'border-[var(--text-primary)] shadow-[0_0_0_2px_var(--glass-border)]'
+                        : 'border-[var(--glass-border)]'
                       }
-                      focus:border-[var(--text-primary)] focus:shadow-[0_0_0_2px_rgba(255,255,255,0.1)]
+                      focus:border-[var(--text-primary)] focus:shadow-[0_0_0_2px_var(--glass-border)]
                       placeholder:opacity-20
                     `}
                     placeholder="·"
@@ -144,7 +144,7 @@ const JoinRoomModal = ({ isOpen, onClose, onJoin }) => {
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="flex-1 px-6 py-4 rounded-xl border border-white/5 hover:bg-white/5 font-bold transition-all text-sm"
+                  className="flex-1 px-6 py-4 rounded-xl border border-[var(--glass-border)] hover:bg-[var(--glass-bg)] font-bold transition-all text-[var(--text-primary)] text-sm"
                 >
                   Cancel
                 </button>

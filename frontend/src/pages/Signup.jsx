@@ -91,7 +91,7 @@ const Signup = () => {
         </div>
 
         {/* Right Side: Form */}
-        <div className="p-10 md:p-14">
+        <div className="p-6 sm:p-10 md:p-14">
           <div className="mb-10">
             <h3 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Create Account</h3>
             <p className="text-[var(--text-secondary)] text-sm">Start your journey with ZentroPay</p>

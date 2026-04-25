@@ -106,14 +106,14 @@ const Dashboard = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsModalOpen(true)}
-              className="flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] hover:bg-white/10 dark:hover:bg-white/10 hover:bg-black/5 transition-all text-xs md:text-sm font-bold flex items-center justify-center gap-2"
+              className="flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] hover:bg-[var(--nav-hover)] transition-all text-xs md:text-sm font-bold flex items-center justify-center gap-2"
             >
               <Plus className="w-4 h-4" />
               Create New
             </button>
             <button
               onClick={() => setIsJoinModalOpen(true)}
-              className="flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] hover:bg-white/10 dark:hover:bg-white/10 hover:bg-black/5 transition-all text-xs md:text-sm font-bold flex items-center justify-center gap-2"
+              className="flex-1 sm:flex-none px-4 md:px-5 py-2.5 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] hover:bg-[var(--nav-hover)] transition-all text-xs md:text-sm font-bold flex items-center justify-center gap-2"
             >
               <UserPlus className="w-4 h-4" />
               Add existing
@@ -204,7 +204,7 @@ const Dashboard = () => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="flex items-center justify-between px-6 md:px-8 py-4 hover:bg-white/5 transition-all group/row"
+                    className="flex items-center justify-between px-6 md:px-8 py-4 hover:bg-[var(--glass-bg)] transition-all group/row"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-9 h-9 rounded-xl border border-[var(--glass-border)] flex items-center justify-center shrink-0">
