@@ -8,6 +8,7 @@
   --glass-border: rgba(255, 255, 255, 0.1);
   --nav-hover: rgba(255, 255, 255, 0.1);
   --accent: #ffffff;
+  --overlay-bg: rgba(0, 0, 0, 0.6);
 }
 
 .light {
@@ -18,6 +19,7 @@
   --glass-border: rgba(0, 0, 0, 0.1);
   --nav-hover: rgba(0, 0, 0, 0.05);
   --accent: #18181b;
+  --overlay-bg: rgba(255, 255, 255, 0.4);
 }
 
 @layer base {
@@ -49,7 +51,7 @@
   .glass-card {
     background-color: var(--glass-bg);
     border-color: var(--glass-border);
-    @apply backdrop-blur-2xl border border-white/10 shadow-[0_24px_48px_rgba(0,0,0,0.3)] rounded-3xl transition-all duration-500;
+    @apply backdrop-blur-2xl border shadow-[0_24px_48px_rgba(0,0,0,0.3)] rounded-3xl transition-all duration-500;
   }
 
   .input-field {

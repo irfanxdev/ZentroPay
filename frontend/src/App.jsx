@@ -12,13 +12,13 @@ const LandingPage = () => (
   <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
     {/* Decorative background elements */}
     <div className="glow-overlay absolute top-1/4 -left-20 w-80 h-80 bg-blue-500/10 rounded-full blur-[120px]" />
-    <div className="glow-overlay absolute bottom-1/4 -right-20 w-80 h-80 bg-white/5 rounded-full blur-[120px]" />
+    <div className="glow-overlay absolute bottom-1/4 -right-20 w-80 h-80 bg-[var(--text-primary)] opacity-5 rounded-full blur-[120px]" />
 
-    <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-white opacity-90 select-none">
+    <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-[var(--text-primary)] opacity-90 select-none">
       GOOD TASTE
     </h1>
     
-    <p className="mt-4 text-white/40 font-medium tracking-widest uppercase text-sm">
+    <p className="mt-4 text-[var(--text-secondary)] font-medium tracking-widest uppercase text-sm">
       Experience the premium interface
     </p>
   </div>

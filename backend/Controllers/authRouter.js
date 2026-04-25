@@ -23,12 +23,13 @@ export async function userSignUp(req, res) {
 
     const user=await User.create(newUser);
     const token = jwt.sign({ id: user._id, name: user.name }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "30d",
     });
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
     res.status(200).json({
       msg: "User registered successfully",
@@ -52,12 +53,13 @@ export async function userLogIn(req, res) {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ msg: "password is incorrect" });
     const token = jwt.sign({ id: user._id, name: user.name }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "30d",
     });
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
     res.status(200).json({ msg: "login successful", user });
