@@ -87,3 +87,34 @@ export const addRoomItem = async (req, res) => {
         return res.status(500).json({ msg: "Server error while adding item" });
     }
 };
+
+// DELETE a single item
+// Only the person who added it OR the room creator can delete it
+export const deleteRoomItem = async (req, res) => {
+    try {
+        const { id, itemId } = req.params;
+
+        const item = await Item.findOne({ _id: itemId, room: id });
+        if (!item) return res.status(404).json({ msg: "Item not found" });
+
+        const room = await Room.findById(id);
+        if (!room) return res.status(404).json({ msg: "Room not found" });
+
+        const isAdder   = item.addedBy.toString() === req.user.id.toString();
+        const isCreator = room.user.toString()     === req.user.id.toString();
+
+        if (!isAdder && !isCreator) {
+            return res.status(403).json({ msg: "You can only delete items you added" });
+        }
+
+        await Item.findByIdAndDelete(itemId);
+
+        // Broadcast deletion so all members' UIs update instantly
+        io.to(id).emit("delete-item", itemId);
+
+        return res.status(200).json({ msg: "Item deleted successfully" });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg: "Server error while deleting item" });
+    }
+};
