@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
     } catch {
       setUser(null);
       setIsAuth(false);
+      localStorage.removeItem('zentropay-token');
     } finally {
       setLoading(false);
     }
@@ -25,9 +26,12 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  const login = (userData) => {
+  const login = (userData, token) => {
     setUser(userData);
     setIsAuth(true);
+    if (token) {
+      localStorage.setItem('zentropay-token', token);
+    }
   };
 
   const logout = async () => {
@@ -38,6 +42,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setUser(null);
       setIsAuth(false);
+      localStorage.removeItem('zentropay-token');
     }
   };
 
