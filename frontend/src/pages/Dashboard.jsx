@@ -10,7 +10,9 @@ import {
   History,
   ChevronRight,
   Users,
+  Trash2,
 } from 'lucide-react';
+
 import API from '../api/api.js';
 import CreateRoomModal from '../components/CreateRoomModal';
 import JoinRoomModal from '../components/JoinRoomModal';
@@ -62,6 +64,17 @@ const Dashboard = () => {
     await fetchRooms(); // refresh list so joined room appears in dashboard
     setIsJoinModalOpen(false);
   };
+
+  const handleDeleteRoom = async (roomId) => {
+    if (!window.confirm('Are you sure you want to delete this room? This will also delete all items inside it.')) return;
+    try {
+      await API.delete(`/room/${roomId}`);
+      setRooms((prev) => prev.filter((r) => r._id !== roomId));
+    } catch (err) {
+      alert(err?.response?.data?.msg || 'Failed to delete room');
+    }
+  };
+
 
   if (loading) {
     return (
@@ -204,13 +217,25 @@ const Dashboard = () => {
                         </p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => navigate(`/room/${room._id}`)}
-                      className="text-[10px] md:text-xs font-bold opacity-50 hover:opacity-100 transition-all flex items-center gap-1 group/btn"
-                    >
-                      View Detail
-                      <ChevronRight className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => navigate(`/room/${room._id}`)}
+                        className="text-[10px] md:text-xs font-bold opacity-50 hover:opacity-100 transition-all flex items-center gap-1 group/btn"
+                      >
+                        View Detail
+                        <ChevronRight className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
+                      </button>
+                      {room.user === user?._id && (
+                        <button
+                          id={`delete-room-${room._id}`}
+                          onClick={() => handleDeleteRoom(room._id)}
+                          className="p-1.5 rounded-lg text-red-400/50 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                          title="Delete room"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </motion.div>
                 ))
               )}

@@ -1,4 +1,5 @@
 import Room from "../Models/Room.js";
+import Item from "../Models/Item.js";
 
 async function genrateUniqueCode(){
     const code=Math.floor(1000+Math.random()*9000);
@@ -82,5 +83,26 @@ export const getAllRoom= async (req,res)=>{
         })
     }catch(error){
         return res.status(500).json({msg:"server error while geting the rooms data"})
+    }
+}
+
+export const deleteRoom = async (req, res) => {
+    try {
+        const room = await Room.findById(req.params.id);
+        if (!room) return res.status(404).json({ msg: "Room not found" });
+
+        // Only the creator can delete the room
+        if (room.user.toString() !== req.user.id.toString()) {
+            return res.status(403).json({ msg: "Only the room creator can delete this room" });
+        }
+
+        // Delete all items belonging to this room first
+        await Item.deleteMany({ room: room._id });
+        await Room.findByIdAndDelete(req.params.id);
+
+        return res.status(200).json({ msg: "Room deleted successfully" });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg: "Server error while deleting the room" });
     }
 }

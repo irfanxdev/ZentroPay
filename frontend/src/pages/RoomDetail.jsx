@@ -10,7 +10,9 @@ import {
   X,
   Wifi,
   WifiOff,
+  Trash2,
 } from 'lucide-react';
+
 import { io } from 'socket.io-client';
 import API from '../api/api.js';
 
@@ -24,6 +26,8 @@ const RoomDetail = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
 
   // Add item form state
   const [showForm, setShowForm] = useState(false);
@@ -37,12 +41,19 @@ const RoomDetail = () => {
 
   const socketRef = useRef(null);
 
+  // Current user id stored in localStorage (set during login)
+
+
   // ── Fetch room + items ───────────────────────────────────────────────────
   const fetchData = async () => {
     try {
-      const res = await API.get(`/room/${id}/items`);
-      setRoom(res.data.room);
-      setItems(res.data.items);
+      const [roomRes, userRes] = await Promise.all([
+        API.get(`/room/${id}/items`),
+        API.get('/auth/dashboard'),
+      ]);
+      setRoom(roomRes.data.room);
+      setItems(roomRes.data.items);
+      setCurrentUser(userRes.data.user);
     } catch (err) {
       console.error('Failed to fetch room data', err);
     } finally {
@@ -79,6 +90,11 @@ const RoomDetail = () => {
       toastTimer.current = setTimeout(() => setLiveToast(null), 3000);
     });
 
+    // Real-time: item deleted by any member
+    socket.on('delete-item', (itemId) => {
+      setItems((prev) => prev.filter((i) => i._id !== itemId));
+    });
+
     return () => {
       socket.disconnect();
       clearTimeout(toastTimer.current);
@@ -111,7 +127,30 @@ const RoomDetail = () => {
     }
   };
 
+  // ── Delete Item ───────────────────────────────────────────────────────────
+  const handleDeleteItem = async (itemId) => {
+    try {
+      await API.delete(`/room/${id}/items/${itemId}`);
+      // Optimistic removal — socket 'delete-item' will sync other members
+      setItems((prev) => prev.filter((i) => i._id !== itemId));
+    } catch (err) {
+      alert(err?.response?.data?.msg || 'Failed to delete item');
+    }
+  };
+
+  // ── Delete Room ───────────────────────────────────────────────────────────
+  const handleDeleteRoom = async () => {
+    if (!window.confirm('Delete this room? All items inside will also be removed.')) return;
+    try {
+      await API.delete(`/room/${id}`);
+      navigate('/dashboard');
+    } catch (err) {
+      alert(err?.response?.data?.msg || 'Failed to delete room');
+    }
+  };
+
   const totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
+
 
   // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
@@ -157,6 +196,18 @@ const RoomDetail = () => {
             </div>
 
             <div className="flex flex-col items-end gap-2">
+              {/* Delete button – creator only */}
+              {room?.user?.toString() === currentUser?._id?.toString() && (
+                <button
+                  id="delete-room-btn"
+                  onClick={handleDeleteRoom}
+                  className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Delete Room
+                </button>
+              )}
+
               {/* Live status indicator */}
               <div className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border ${
                 connected
@@ -329,45 +380,68 @@ const RoomDetail = () => {
               animate={{ opacity: 1 }}
               className="glass-card overflow-hidden"
             >
-              <AnimatePresence initial={false}>
-                {items.map((item, index) => (
-                  <motion.div
-                    key={item._id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    transition={{ delay: index < 5 ? index * 0.04 : 0 }}
-                    className={`flex items-center justify-between px-6 py-4 ${
-                      index !== items.length - 1
-                        ? 'border-b border-[var(--glass-border)]'
-                        : ''
-                    } hover:bg-white/5 transition-all`}
-                  >
-                    {/* Left – index + name */}
-                    <div className="flex items-center gap-4">
-                      <span className="w-8 h-8 rounded-xl border border-[var(--glass-border)] flex items-center justify-center text-xs font-black opacity-40 shrink-0">
-                        {index + 1}
-                      </span>
-                      <div>
-                        <p className="font-semibold text-sm md:text-base">{item.name}</p>
-                        {item.addedBy?.name && (
-                          <p className="text-[var(--text-secondary)] text-xs mt-0.5">
-                            Added by {item.addedBy.name}
-                          </p>
+              {/* Scrollable items — Total row stays pinned below */}
+              <div
+                className="overflow-y-auto"
+                style={{
+                  maxHeight: '400px',
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: 'rgba(255,255,255,0.1) transparent',
+                }}
+              >
+                <AnimatePresence initial={false}>
+                  {items.map((item, index) => (
+                    <motion.div
+                      key={item._id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 10 }}
+                      transition={{ delay: index < 5 ? index * 0.04 : 0 }}
+                      className={`flex items-center justify-between px-6 py-4 ${
+                        index !== items.length - 1
+                          ? 'border-b border-[var(--glass-border)]'
+                          : ''
+                      } hover:bg-white/5 transition-all group/row`}
+                    >
+                      {/* Left – index + name */}
+                      <div className="flex items-center gap-4">
+                        <span className="w-8 h-8 rounded-xl border border-[var(--glass-border)] flex items-center justify-center text-xs font-black opacity-40 shrink-0">
+                          {index + 1}
+                        </span>
+                        <div>
+                          <p className="font-semibold text-sm md:text-base">{item.name}</p>
+                          {item.addedBy?.name && (
+                            <p className="text-[var(--text-secondary)] text-xs mt-0.5">
+                              Added by {item.addedBy.name}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Right – amount + delete */}
+                      <div className="flex items-center gap-3">
+                        <span className="font-black text-base md:text-lg flex items-center gap-0.5">
+                          <IndianRupee className="w-4 h-4 opacity-60" />
+                          {item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        </span>
+                        {(item.addedBy?._id?.toString() === currentUser?._id?.toString() ||
+                          room?.user?.toString() === currentUser?._id?.toString()) && (
+                          <button
+                            id={`delete-item-${item._id}`}
+                            onClick={() => handleDeleteItem(item._id)}
+                            className="opacity-0 group-hover/row:opacity-100 p-1.5 rounded-lg text-red-400/60 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                            title="Delete item"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         )}
                       </div>
-                    </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
 
-                    {/* Right – amount */}
-                    <span className="font-black text-base md:text-lg flex items-center gap-0.5">
-                      <IndianRupee className="w-4 h-4 opacity-60" />
-                      {item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                    </span>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-
-              {/* Total row */}
+              {/* Total row — always visible, never scrolls */}
               <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--glass-border)] bg-white/[0.03]">
                 <span className="text-xs font-black uppercase tracking-widest opacity-40">
                   Total
