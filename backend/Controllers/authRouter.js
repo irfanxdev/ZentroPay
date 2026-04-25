@@ -34,6 +34,7 @@ export async function userSignUp(req, res) {
     res.status(200).json({
       msg: "User registered successfully",
       user: newUser,
+      token,
     });
   } catch (error) {
     return res.status(500).json({ error: "server error in Signup" });
@@ -62,7 +63,7 @@ export async function userLogIn(req, res) {
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
-    res.status(200).json({ msg: "login successful", user });
+    res.status(200).json({ msg: "login successful", user, token });
   } catch (error) {
     res.status(500).json({ error: "Server error to login" });
   }

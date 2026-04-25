@@ -22,7 +22,7 @@ const Login = () => {
       const response = await API.post('/auth/login', { email, password });
       if (response.status === 200) {
         // Success - update state and redirect
-        login(response.data.user);
+        login(response.data.user, response.data.token);
         navigate('/dashboard');
       }
     } catch (err) {

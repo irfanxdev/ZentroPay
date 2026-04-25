@@ -34,7 +34,7 @@ const Signup = () => {
       });
 
       if (response.status === 200) {
-        login(response.data.user);
+        login(response.data.user, response.data.token);
         navigate('/dashboard');
       }
     } catch (err) {
