@@ -76,7 +76,7 @@ export const getAllRoom= async (req,res)=>{
                 { user: req.user.id },
                 { members: req.user.id }
             ]
-        });
+        }).sort({ updatedAt: -1 });
         return res.status(200).json({
             msg:"Rooms data fetched successfully",
             rooms
