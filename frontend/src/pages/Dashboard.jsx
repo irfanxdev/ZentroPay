@@ -150,11 +150,11 @@ const Dashboard = () => {
               <div className="relative z-10 flex flex-col h-full justify-between gap-8 md:gap-12">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="text-xs md:text-sm font-bold opacity-40 uppercase tracking-[0.2em] mb-2">{rooms[rooms.length - 1].purpose}</p>
-                    <p className="text-xs md:text-sm font-bold opacity-40 uppercase tracking-[0.2em] mb-2">{rooms[rooms.length - 1].member} Members</p>
+                    <p className="text-xs md:text-sm font-bold opacity-40 uppercase tracking-[0.2em] mb-2">{rooms[0].purpose}</p>
+                    <p className="text-xs md:text-sm font-bold opacity-40 uppercase tracking-[0.2em] mb-2">{rooms[0].member} Members</p>
                   </div>
                   <button
-                    onClick={() => navigate(`/room/${rooms[rooms.length - 1]._id}`)}
+                    onClick={() => navigate(`/room/${rooms[0]._id}`)}
                     className="text-[10px] md:text-xs font-bold opacity-60 hover:opacity-100 transition-all flex items-center gap-1 group/btn"
                   >
                     View Detail
@@ -166,7 +166,7 @@ const Dashboard = () => {
                   <div className="space-y-1">
                     <p className="text-[10px] md:text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Members</p>
                     <div className="flex items-center gap-2">
-                      <span className="text-xl md:text-2xl font-black">{rooms[rooms.length - 1].memberNames?.join(', ')}</span>
+                      <span className="text-xl md:text-2xl font-black">{rooms[0].memberNames?.join(', ')}</span>
                     </div>
                   </div>
                 </div>
